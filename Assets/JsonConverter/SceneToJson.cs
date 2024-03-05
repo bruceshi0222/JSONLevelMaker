@@ -142,7 +142,13 @@ public class SceneToJson : MonoBehaviour
         }
 
         foreach(Transform child in GroundRoot){
-            GameObjectPrimitive temp = new GameObjectPrimitive( "cube.msh", child.transform.localScale, child.transform.rotation, child.transform.position,
+
+            // Debug.Log(child.GetComponent<MeshFilter>().sharedMesh.name);
+            GameObjectPrimitive temp = new GameObjectPrimitive( 
+            child.GetComponent<MeshFilter>().sharedMesh.name + ".msh",
+            child.transform.localScale, 
+            child.transform.rotation, 
+            child.transform.position,
             child.GetComponent<Rigidbody>().mass, child.tag, child.GetComponent<Collider>().GetType().ToString(), new Vector3(0,0,0), 0, true);
 
             if(child.GetComponent<Collider>().GetType() == typeof(BoxCollider)){
