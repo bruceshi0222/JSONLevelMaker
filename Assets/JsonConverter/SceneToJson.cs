@@ -82,6 +82,7 @@ public class SceneToJson : MonoBehaviour
 
             primitiveGameObject =   new List<GameObjectPrimitive>();
             oscList =               new List<Oscillaters>();
+            harmOscList =               new List<Oscillaters>();
             checkPoints =           new List<Vector3>();
         }
         public int getListCount(){
@@ -110,7 +111,8 @@ public class SceneToJson : MonoBehaviour
         GameObject DP       = GameObject.Find("DeathPlane");
         GameObject HarmOscR       = GameObject.Find("HarmfulOscillators");
 
-        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null){
+        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null)
+        {
             Debug.LogError("No essestial objects. Check for ground, start, or end");
             return;
         }
@@ -119,7 +121,7 @@ public class SceneToJson : MonoBehaviour
 
         CreateGroundObjects     (GroundR.transform);
         CreateOscillatorObjects (OscR.transform);
-        //CreateHarmfulOscillatorObjects(HarmOscR.transform);
+        CreateHarmfulOscillatorObjects(HarmOscR.transform);
         CreateCheckPoints(CPR.transform);
 
         string json = JsonUtility.ToJson(level);
@@ -240,7 +242,7 @@ public class SceneToJson : MonoBehaviour
                 data.cooldown,
                 data.waitDelay
             );
-            level.oscList.Add(tempOs);
+            level.harmOscList.Add(tempOs);
             Debug.Log("Added Harmful Oscillator");
         }
     }
