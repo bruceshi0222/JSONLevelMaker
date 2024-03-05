@@ -17,13 +17,14 @@ public class SceneToJson : MonoBehaviour
     [SerializeField] string levelName;
     [Serializable]
     class GameObjectPrimitive { 
-        public GameObjectPrimitive(string Pmesh, Vector3 dims, Quaternion rot, Vector3 pos, float invMass, 
+        public GameObjectPrimitive() { }
+        public GameObjectPrimitive(string pMesh, Vector3 dims, Quaternion rot, Vector3 pos, float invMass, 
                                 string phType,  string volType, Vector3 colExt, float colRadius, bool shouldNet){
-            mesh =  Pmesh;
+            mesh =  pMesh;
             dimensions = dims;
             rotation = rot;
             position = pos;
-            inverseMass = inverseMass;
+            inverseMass = invMass;
             physicType = phType;
             colliderExtents = colExt;
             colliderRadius = colRadius;
@@ -45,21 +46,25 @@ public class SceneToJson : MonoBehaviour
     }
 
     [Serializable]
-    class Oscillaters {
-        public Oscillaters(string pMesh, Vector3 pdims, Vector3 pPos, float tPeriod, float pDist, Vector3 pDir, float pcooldown, float pwait){
+    class Oscillaters : GameObjectPrimitive {
+        public Oscillaters(string pMesh, Vector3 dims, Quaternion rot, Vector3 pos, string phType, string volType, Vector3 colExt, float colRadius, float tPeriod, float pDist, Vector3 pDir, float pcooldown, float pwait)
+        {
             mesh = pMesh;
-            dimensions = pdims;
-            position = pPos;
+            dimensions = dims;
+            rotation = rot;
+            position = pos;
+            inverseMass = 0.0f;
+            physicType = phType;
+            colliderExtents = colExt;
+            colliderRadius = colRadius;
+            position = pos;
+            shouldNetwork = true;
             timePeriod = tPeriod;
             dist = pDist;
             direction = pDir;
             cooldown = pcooldown;
             waitDelay = pwait;
         }
-
-        public string mesh;
-        public Vector3 dimensions;
-        public Vector3 position;
         public float timePeriod;
         public float dist;
         public Vector3 direction;
@@ -73,7 +78,7 @@ public class SceneToJson : MonoBehaviour
         public Stage(Vector3 StartPos, Vector3 EndPos, Vector3 DeathPlane){
             StartPoint =        StartPos;
             EndPoint =          EndPos;
-            DeathPlane =        DeathPlane;
+            this.DeathPlane =        DeathPlane;
 
             primitiveGameObject =   new List<GameObjectPrimitive>();
             oscList =               new List<Oscillaters>();
@@ -88,20 +93,22 @@ public class SceneToJson : MonoBehaviour
         public List<Vector3> checkPoints;
         public List<GameObjectPrimitive> primitiveGameObject;
         public List<Oscillaters> oscList;
+        public List<Oscillaters> harmOscList;
         
     }
 
     Stage level;
 
     private void Start(){
-        
-       
+
+        Debug.Log("WORKING!!!");
         GameObject GroundR  = GameObject.Find("GroundRoot");
         GameObject Start    = GameObject.Find("StartPoint");
         GameObject End      = GameObject.Find("EndPoint");
         GameObject OscR     = GameObject.Find("OscillatingPlatforms");
         GameObject CPR      = GameObject.Find("Checkpoints");
         GameObject DP       = GameObject.Find("DeathPlane");
+        GameObject HarmOscR       = GameObject.Find("HarmfulOscillators");
 
         if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null){
             Debug.LogError("No essestial objects. Check for ground, start, or end");
@@ -112,7 +119,8 @@ public class SceneToJson : MonoBehaviour
 
         CreateGroundObjects     (GroundR.transform);
         CreateOscillatorObjects (OscR.transform);
-        CreateCheckPoints       (CPR.transform);
+        //CreateHarmfulOscillatorObjects(HarmOscR.transform);
+        CreateCheckPoints(CPR.transform);
 
         string json = JsonUtility.ToJson(level);
         WriteJson(json);
@@ -172,7 +180,60 @@ public class SceneToJson : MonoBehaviour
             Oscillaters tempOs = new Oscillaters(
                 data.mesh, 
                 data.dimensions,
+                child.rotation,
                 data.position,
+                "",
+                child.GetComponent<Collider>().GetType().ToString(),
+                new Vector3(0, 0, 0),
+                0,
+                data.timePeriod,
+                data.dist,
+                data.direction,
+                data.cooldown,
+                data.waitDelay
+            );
+
+            if (child.GetComponent<Collider>().GetType() == typeof(BoxCollider))
+            {
+                tempOs.volumeType = "box";
+                tempOs.colliderExtents = child.GetComponent<Collider>().bounds.size;
+                tempOs.colliderRadius = 0;
+                // Debug.Log("box");
+
+            }
+            else if (child.GetComponent<Collider>().GetType() == typeof(SphereCollider))
+            {
+                tempOs.volumeType = "sphere";
+                tempOs.colliderRadius = child.GetComponent<SphereCollider>().radius;
+                tempOs.colliderExtents = new Vector3(0, 0, 0);
+                // Debug.Log("circle");
+            }
+            level.oscList.Add(tempOs);
+            Debug.Log("Added Oscillator");
+        }
+   }
+
+    private void CreateHarmfulOscillatorObjects(Transform harmfulOscillatorRoot)
+    {
+        if (harmfulOscillatorRoot.childCount == 0)
+        {
+            Debug.Log("No Harmful Oscillators in level");
+            return;
+        }
+
+        foreach (Transform child in harmfulOscillatorRoot)
+        {
+            OscPlat data = child.GetComponent<OscPlat>();
+
+            Oscillaters tempOs = new Oscillaters(
+                data.mesh,
+                data.dimensions,
+                child.rotation,
+                data.position,
+                "",
+                child.GetComponent<Collider>().GetType().ToString(),
+                new Vector3(0, 0, 0),
+                0,
                 data.timePeriod,
                 data.dist,
                 data.direction,
@@ -180,11 +241,11 @@ public class SceneToJson : MonoBehaviour
                 data.waitDelay
             );
             level.oscList.Add(tempOs);
-            Debug.Log("Added Oscillator");
+            Debug.Log("Added Harmful Oscillator");
         }
-   }
+    }
 
-   private void CreateCheckPoints(Transform CheckRoot){
+    private void CreateCheckPoints(Transform CheckRoot){
         if(CheckRoot.childCount == 0){
             Debug.LogError("No CheckPoints");
             return;

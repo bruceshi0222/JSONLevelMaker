@@ -8,31 +8,33 @@ public class OscPlat : MonoBehaviour
     [Header("General Settings")]
     [SerializeField]
     public string mesh;
-    [SerializeField]
+    [HideInInspector]
     public Vector3 dimensions;
-    [SerializeField]
+    [HideInInspector]
     public Vector3 position;
     [SerializeField]
     public float timePeriod;
-    [SerializeField]
+    [HideInInspector]
     public float dist;
-    [SerializeField]
+    [HideInInspector]
     public Vector3 direction;
     [SerializeField]
     public float cooldown;
     [SerializeField]
     public float waitDelay;
 
-    [Header("Set this object if you dont know the direction")]
+    [Header("The end position of the oscillator")]
     [SerializeField]
     public GameObject directionObj;
     
     // Start is called before the first frame update
-    void Start()
+
+    private void Awake()
     {
-        if(direction == Vector3.zero){
-            direction = directionObj.transform.position - this.transform.position;
-        }
+        dimensions = transform.localScale;
+        position = transform.localPosition;
+        direction = (directionObj.transform.position - this.transform.position).normalized;
+        dist = (directionObj.transform.position - this.transform.position).magnitude;
     }
 
     // Update is called once per frame
