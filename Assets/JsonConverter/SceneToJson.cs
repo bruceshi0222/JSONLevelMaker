@@ -242,6 +242,21 @@ public class SceneToJson : MonoBehaviour
                 data.cooldown,
                 data.waitDelay
             );
+            if (child.GetComponent<Collider>().GetType() == typeof(BoxCollider))
+            {
+                tempOs.volumeType = "box";
+                tempOs.colliderExtents = child.GetComponent<Collider>().bounds.size;
+                tempOs.colliderRadius = 0;
+                // Debug.Log("box");
+
+            }
+            else if (child.GetComponent<Collider>().GetType() == typeof(SphereCollider))
+            {
+                tempOs.volumeType = "sphere";
+                tempOs.colliderRadius = child.GetComponent<SphereCollider>().radius;
+                tempOs.colliderExtents = new Vector3(0, 0, 0);
+                // Debug.Log("circle");
+            }
             level.harmOscList.Add(tempOs);
             Debug.Log("Added Harmful Oscillator");
         }
