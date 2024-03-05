@@ -145,7 +145,7 @@ public class SceneToJson : MonoBehaviour
 
             if(child.GetComponent<Collider>().GetType() == typeof(BoxCollider)){
                 temp.volumeType = "box";
-                temp.colliderExtents = child.GetComponent<Collider>().bounds.size;
+                temp.colliderExtents = child.localScale;
                 temp.colliderRadius = 0;
                 // Debug.Log("box");
 
