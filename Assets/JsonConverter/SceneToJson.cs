@@ -153,13 +153,13 @@ public class SceneToJson : MonoBehaviour
 
             if(child.GetComponent<Collider>().GetType() == typeof(BoxCollider)){
                 temp.volumeType = "box";
-                temp.colliderExtents = child.localScale;
+                temp.colliderExtents = Vector3.Scale(child.transform.localScale, child.GetComponent<BoxCollider>().size);
                 temp.colliderRadius = 0;
                 // Debug.Log("box");
 
             } else if (child.GetComponent<Collider>().GetType() == typeof(SphereCollider)){
                 temp.volumeType = "sphere";
-                temp.colliderRadius = child.GetComponent<SphereCollider>().radius;
+                temp.colliderRadius = child.transform.localScale.x  * child.GetComponent<SphereCollider>().radius;
                 temp.colliderExtents = new Vector3(0,0,0);
                 // Debug.Log("circle");
             }
@@ -204,7 +204,7 @@ public class SceneToJson : MonoBehaviour
             if (child.GetComponent<Collider>().GetType() == typeof(BoxCollider))
             {
                 tempOs.volumeType = "box";
-                tempOs.colliderExtents = child.GetComponent<Collider>().bounds.size;
+                tempOs.colliderExtents = Vector3.Scale(child.transform.localScale,child.GetComponent<BoxCollider>().size);
                 tempOs.colliderRadius = 0;
                 // Debug.Log("box");
 
