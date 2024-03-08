@@ -73,6 +73,38 @@ public class SceneToJson : MonoBehaviour
         
     }
 
+    [Serializable]
+    class SpringInfo : GameObjectPrimitive
+    {
+        public SpringInfo(string pMesh, Vector3 dims, Quaternion rot, Vector3 pos, string phType, string volType, Vector3 colExt, float colRadius,
+            Vector3 dir, float f, float activeT, bool continuous, float continuousF)
+        {
+            mesh = pMesh;
+            dimensions = dims;
+            rotation = rot;
+            position = pos;
+            inverseMass = 0.0f;
+            physicType = phType;
+            colliderExtents = colExt;
+            colliderRadius = colRadius;
+            position = pos;
+            shouldNetwork = false;
+            direction = dir;
+            force = f;
+            activeTime = activeT;
+            isContinuous = continuous;
+            continuousForce = continuousF;
+
+        }
+        public Vector3 direction;
+        public float force;
+        public float activeTime;
+        public bool isContinuous;
+        public float continuousForce;
+
+    }
+
+    [Serializable]
     class LightInfo
     {
         public Vector3 position;
@@ -92,6 +124,7 @@ public class SceneToJson : MonoBehaviour
             harmOscList =               new List<Oscillaters>();
             checkPoints =           new List<Vector3>();
             pointLights = new List<LightInfo>();
+            springs = new List<SpringInfo>();
         }
         public int getListCount(){
             return primitiveGameObject.Count;
@@ -104,6 +137,7 @@ public class SceneToJson : MonoBehaviour
         public List<Oscillaters> oscList;
         public List<Oscillaters> harmOscList;
         public List<LightInfo> pointLights;
+        public List<SpringInfo> springs;
         
     }
 
@@ -120,8 +154,9 @@ public class SceneToJson : MonoBehaviour
         GameObject DP       = GameObject.Find("DeathPlane");
         GameObject HarmOscR       = GameObject.Find("HarmfulOscillators");
         GameObject LightR       = GameObject.Find("Lights");
+        GameObject SpringR       = GameObject.Find("Springs");
 
-        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null || LightR == null)
+        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null || LightR == null || SpringR == null)
         {
             Debug.LogError("No essestial objects. Check for ground, start, or end");
             return;
@@ -134,6 +169,7 @@ public class SceneToJson : MonoBehaviour
         CreateHarmfulOscillatorObjects(HarmOscR.transform);
         CreateCheckPoints(CPR.transform);
         CreateLights(LightR.transform);
+        CreateSprings(SpringR.transform);
 
         string json = JsonUtility.ToJson(level);
         WriteJson(json);
@@ -262,7 +298,7 @@ public class SceneToJson : MonoBehaviour
             if (child.GetComponent<Collider>().GetType() == typeof(BoxCollider))
             {
                 tempOs.volumeType = "box";
-                tempOs.colliderExtents = child.GetComponent<Collider>().bounds.size;
+                tempOs.colliderExtents = Vector3.Scale(child.transform.localScale, child.GetComponent<BoxCollider>().size);
                 tempOs.colliderRadius = 0;
                 // Debug.Log("box");
 
@@ -306,6 +342,47 @@ public class SceneToJson : MonoBehaviour
             level.pointLights.Add(lightInfo);
             Debug.Log("ADDED LIGHT!");
         }
+    }
+
+    void CreateSprings(Transform root)
+    {
+        foreach (Spring child in root.GetComponentsInChildren<Spring>())
+        {
+            SpringInfo spring = new SpringInfo(
+                child.mesh,
+                child.dimensions,
+                child.transform.rotation,
+                child.position,
+                "",
+                child.GetComponent<Collider>().GetType().ToString(),
+                new Vector3(0, 0, 0),
+                0,
+                child.direction,
+                child.force,
+                child.activeTime,
+                child.isContinuous,
+                child.continuousForce
+            );
+
+            if (child.GetComponent<Collider>().GetType() == typeof(BoxCollider))
+            {
+                spring.volumeType = "box";
+                spring.colliderExtents = Vector3.Scale(child.transform.localScale, child.GetComponent<BoxCollider>().size);
+                spring.colliderRadius = 0;
+                // Debug.Log("box");
+
+            }
+            else if (child.GetComponent<Collider>().GetType() == typeof(SphereCollider))
+            {
+                spring.volumeType = "sphere";
+                spring.colliderRadius = child.GetComponent<SphereCollider>().radius;
+                spring.colliderExtents = new Vector3(0, 0, 0);
+                // Debug.Log("circle");
+            }
+            Debug.Log("Added Spring!");
+            level.springs.Add(spring);
+        }
+
     }
 
 }
