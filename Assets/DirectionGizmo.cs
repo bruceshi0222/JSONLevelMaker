@@ -7,7 +7,12 @@ public class DirectionGizmo : MonoBehaviour
     [SerializeField] Transform parent;
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.red;
+        Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, parent.position);
+    }
+
+    private void OnValidate()
+    {
+        
     }
 }
