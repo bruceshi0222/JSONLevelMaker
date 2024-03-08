@@ -73,6 +73,13 @@ public class SceneToJson : MonoBehaviour
         
     }
 
+    class LightInfo
+    {
+        public Vector3 position;
+        public Vector4 colour;
+        public float radius;
+    }
+
     [Serializable]
     class Stage {
         public Stage(Vector3 StartPos, Vector3 EndPos, Vector3 DeathPlane){
@@ -84,6 +91,7 @@ public class SceneToJson : MonoBehaviour
             oscList =               new List<Oscillaters>();
             harmOscList =               new List<Oscillaters>();
             checkPoints =           new List<Vector3>();
+            pointLights = new List<LightInfo>();
         }
         public int getListCount(){
             return primitiveGameObject.Count;
@@ -95,6 +103,7 @@ public class SceneToJson : MonoBehaviour
         public List<GameObjectPrimitive> primitiveGameObject;
         public List<Oscillaters> oscList;
         public List<Oscillaters> harmOscList;
+        public List<LightInfo> pointLights;
         
     }
 
@@ -110,8 +119,9 @@ public class SceneToJson : MonoBehaviour
         GameObject CPR      = GameObject.Find("Checkpoints");
         GameObject DP       = GameObject.Find("DeathPlane");
         GameObject HarmOscR       = GameObject.Find("HarmfulOscillators");
+        GameObject LightR       = GameObject.Find("Lights");
 
-        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null)
+        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null || LightR == null)
         {
             Debug.LogError("No essestial objects. Check for ground, start, or end");
             return;
@@ -123,6 +133,7 @@ public class SceneToJson : MonoBehaviour
         CreateOscillatorObjects (OscR.transform);
         CreateHarmfulOscillatorObjects(HarmOscR.transform);
         CreateCheckPoints(CPR.transform);
+        CreateLights(LightR.transform);
 
         string json = JsonUtility.ToJson(level);
         WriteJson(json);
@@ -281,5 +292,20 @@ public class SceneToJson : MonoBehaviour
         }
 
    }
+
+    void CreateLights(Transform root)
+    {
+        foreach (Transform child in root)
+        {
+            Light lightComponent = child.GetComponent<Light>();
+            LightInfo lightInfo = new LightInfo();
+            lightInfo.radius = lightComponent.range;
+            lightInfo.colour = lightComponent.color;
+            lightInfo.position = child.transform.position;
+
+            level.pointLights.Add(lightInfo);
+            Debug.Log("ADDED LIGHT!");
+        }
+    }
 
 }
