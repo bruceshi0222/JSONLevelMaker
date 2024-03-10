@@ -156,7 +156,7 @@ public class SceneToJson : MonoBehaviour
         GameObject LightR       = GameObject.Find("Lights");
         GameObject SpringR       = GameObject.Find("Springs");
 
-        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null || LightR == null || SpringR == null)
+        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null)
         {
             Debug.LogError("No essestial objects. Check for ground, start, or end");
             return;
@@ -168,8 +168,8 @@ public class SceneToJson : MonoBehaviour
         CreateOscillatorObjects (OscR.transform);
         CreateHarmfulOscillatorObjects(HarmOscR.transform);
         CreateCheckPoints(CPR.transform);
-        CreateLights(LightR.transform);
-        CreateSprings(SpringR.transform);
+        // CreateLights(LightR.transform);
+        // CreateSprings(SpringR.transform);
 
         Debug.Log("Loaded!");
         string json = JsonUtility.ToJson(level);
