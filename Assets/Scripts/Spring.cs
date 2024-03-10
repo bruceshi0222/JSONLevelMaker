@@ -34,11 +34,18 @@ public class Spring : MonoBehaviour
         position = transform.position;
         direction = (directionObject.transform.position - transform.position).normalized;
     }
-
-    // Update is called once per frame
-    void Update()
+    private void Reset()
     {
+        if (!directionObject)
+        {
+            GameObject gizmo = new GameObject("DirectionGizmo");
+            gizmo.transform.parent = transform;
+            gizmo.transform.localPosition = Vector3.zero;
+            DirectionGizmo comp = gizmo.AddComponent<DirectionGizmo>();
+            comp.parent = transform;
 
+            directionObject = gizmo.transform;
+        }
     }
 
 }

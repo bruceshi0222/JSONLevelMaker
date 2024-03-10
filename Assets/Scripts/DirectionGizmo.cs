@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class DirectionGizmo : MonoBehaviour
 {
-    [SerializeField] Transform parent;
-    private void OnDrawGizmosSelected()
+    [SerializeField] public Transform parent;
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, parent.position);
