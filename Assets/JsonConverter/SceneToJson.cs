@@ -171,6 +171,7 @@ public class SceneToJson : MonoBehaviour
         CreateLights(LightR.transform);
         CreateSprings(SpringR.transform);
 
+        Debug.Log("Loaded!");
         string json = JsonUtility.ToJson(level);
         WriteJson(json);
 
@@ -191,8 +192,8 @@ public class SceneToJson : MonoBehaviour
         foreach(Transform child in GroundRoot){
 
             // Debug.Log(child.GetComponent<MeshFilter>().sharedMesh.name);
-            GameObjectPrimitive temp = new GameObjectPrimitive( 
-            child.GetComponent<MeshFilter>().sharedMesh.name + ".msh",
+            GameObjectPrimitive temp = new GameObjectPrimitive(
+            GetMeshName(child.gameObject),
             child.transform.localScale, 
             child.transform.rotation, 
             child.transform.position,
@@ -233,7 +234,7 @@ public class SceneToJson : MonoBehaviour
             OscPlat data = child.GetComponent<OscPlat>();
             
             Oscillaters tempOs = new Oscillaters(
-                data.mesh, 
+                GetMeshName(child.gameObject), 
                 data.dimensions,
                 child.rotation,
                 data.position,
@@ -281,7 +282,7 @@ public class SceneToJson : MonoBehaviour
             OscPlat data = child.GetComponent<OscPlat>();
 
             Oscillaters tempOs = new Oscillaters(
-                data.mesh,
+                GetMeshName(child.gameObject),
                 data.dimensions,
                 child.rotation,
                 data.position,
@@ -349,7 +350,7 @@ public class SceneToJson : MonoBehaviour
         foreach (Spring child in root.GetComponentsInChildren<Spring>())
         {
             SpringInfo spring = new SpringInfo(
-                child.mesh,
+                GetMeshName(child.gameObject),
                 child.dimensions,
                 child.transform.rotation,
                 child.position,
@@ -385,4 +386,18 @@ public class SceneToJson : MonoBehaviour
 
     }
 
+
+    string GetMeshName(GameObject obj)
+    {
+        string meshName = "";
+        MeshSelector meshInfo;
+        if (obj.TryGetComponent<MeshSelector>(out meshInfo)){
+            meshName += meshInfo.mesh.ToString();
+            meshName += ".";
+            meshName += meshInfo.extension.ToString();
+            return meshName;
+        }
+
+        return "Cube.msh";
+    }
 }
