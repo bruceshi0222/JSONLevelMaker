@@ -168,8 +168,8 @@ public class SceneToJson : MonoBehaviour
         CreateOscillatorObjects (OscR.transform);
         CreateHarmfulOscillatorObjects(HarmOscR.transform);
         CreateCheckPoints(CPR.transform);
-        // CreateLights(LightR.transform);
-        // CreateSprings(SpringR.transform);
+        CreateLights(LightR.transform);
+        CreateSprings(SpringR.transform);
 
         Debug.Log("Loaded!");
         string json = JsonUtility.ToJson(level);
