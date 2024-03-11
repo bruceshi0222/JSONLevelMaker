@@ -105,6 +105,24 @@ public class SceneToJson : MonoBehaviour
     }
 
     [Serializable]
+    class SpeedblockInfo : GameObjectPrimitive
+    {
+        public SpeedblockInfo(string pMesh, Vector3 dims, Quaternion rot, Vector3 pos, string phType, string volType, Vector3 colExt, float colRadius)
+        {
+            mesh = pMesh;
+            dimensions = dims;
+            rotation = rot;
+            position = pos;
+            inverseMass = 0.0f;
+            physicType = phType;
+            colliderExtents = colExt;
+            colliderRadius = colRadius;
+            position = pos;
+            shouldNetwork = false;
+        }
+    }
+
+    [Serializable]
     class LightInfo
     {
         public Vector3 position;
@@ -125,6 +143,7 @@ public class SceneToJson : MonoBehaviour
             checkPoints =           new List<Vector3>();
             pointLights = new List<LightInfo>();
             springs = new List<SpringInfo>();
+            speedBlockList = new List<SpeedblockInfo>();
         }
         public int getListCount(){
             return primitiveGameObject.Count;
@@ -138,6 +157,7 @@ public class SceneToJson : MonoBehaviour
         public List<Oscillaters> harmOscList;
         public List<LightInfo> pointLights;
         public List<SpringInfo> springs;
+        public List<SpeedblockInfo> speedBlockList;
         
     }
 
@@ -155,8 +175,9 @@ public class SceneToJson : MonoBehaviour
         GameObject HarmOscR       = GameObject.Find("HarmfulOscillators");
         GameObject LightR       = GameObject.Find("Lights");
         GameObject SpringR       = GameObject.Find("Springs");
+        GameObject SpeedblockR       = GameObject.Find("SpeedBlocks");
 
-        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null)
+        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null || LightR == null || SpringR == null || SpeedblockR== null)
         {
             Debug.LogError("No essestial objects. Check for ground, start, or end");
             return;
@@ -168,8 +189,9 @@ public class SceneToJson : MonoBehaviour
         CreateOscillatorObjects (OscR.transform);
         CreateHarmfulOscillatorObjects(HarmOscR.transform);
         CreateCheckPoints(CPR.transform);
-        // CreateLights(LightR.transform);
-        // CreateSprings(SpringR.transform);
+        CreateLights(LightR.transform);
+        CreateSprings(SpringR.transform);
+        CreateSpeedblocks(SpeedblockR.transform);
 
         Debug.Log("Loaded!");
         string json = JsonUtility.ToJson(level);
@@ -382,6 +404,41 @@ public class SceneToJson : MonoBehaviour
             }
             Debug.Log("Added Spring!");
             level.springs.Add(spring);
+        }
+
+    }
+
+
+
+    void CreateSpeedblocks(Transform root)
+    {
+        foreach (Speedblock child in root.GetComponentsInChildren<Speedblock>())
+        {
+            SpeedblockInfo speedblock = new SpeedblockInfo(
+            GetMeshName(child.gameObject),
+            child.transform.localScale,
+            child.transform.rotation,
+            child.transform.position, child.tag, child.GetComponent<Collider>().GetType().ToString(), new Vector3(0, 0, 0), 0);
+
+            if (child.GetComponent<Collider>().GetType() == typeof(BoxCollider))
+            {
+                speedblock.volumeType = "box";
+                speedblock.colliderExtents = Vector3.Scale(child.transform.localScale, child.GetComponent<BoxCollider>().size);
+                speedblock.colliderRadius = 0;
+                // Debug.Log("box");
+
+            }
+            else if (child.GetComponent<Collider>().GetType() == typeof(SphereCollider))
+            {
+                speedblock.volumeType = "sphere";
+                speedblock.colliderRadius = child.transform.localScale.x * child.GetComponent<SphereCollider>().radius;
+                speedblock.colliderExtents = new Vector3(0, 0, 0);
+                // Debug.Log("circle");
+            }
+            level.primitiveGameObject.Add(speedblock);
+
+            Debug.Log("Speedblock Added");
+            level.speedBlockList.Add(speedblock);
         }
 
     }
