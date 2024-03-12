@@ -123,6 +123,24 @@ public class SceneToJson : MonoBehaviour
     }
 
     [Serializable]
+    class BridgeInfo : GameObjectPrimitive
+    {
+        public BridgeInfo(string pMesh, Vector3 dims, Quaternion rot, Vector3 pos, string phType, string volType, Vector3 colExt, float colRadius)
+        {
+            mesh = pMesh;
+            dimensions = dims;
+            rotation = rot;
+            position = pos;
+            inverseMass = 0.0f;
+            physicType = phType;
+            colliderExtents = colExt;
+            colliderRadius = colRadius;
+            position = pos;
+            shouldNetwork = false;
+        }
+    }
+
+    [Serializable]
     class LightInfo
     {
         public Vector3 position;
@@ -144,6 +162,8 @@ public class SceneToJson : MonoBehaviour
             pointLights = new List<LightInfo>();
             springs = new List<SpringInfo>();
             speedBlockList = new List<SpeedblockInfo>();
+            bridgeList = new List<BridgeInfo>();
+            
         }
         public int getListCount(){
             return primitiveGameObject.Count;
@@ -158,6 +178,7 @@ public class SceneToJson : MonoBehaviour
         public List<LightInfo> pointLights;
         public List<SpringInfo> springs;
         public List<SpeedblockInfo> speedBlockList;
+        public List<BridgeInfo> bridgeList;
         
     }
 
@@ -176,8 +197,9 @@ public class SceneToJson : MonoBehaviour
         GameObject LightR       = GameObject.Find("Lights");
         GameObject SpringR       = GameObject.Find("Springs");
         GameObject SpeedblockR       = GameObject.Find("SpeedBlocks");
+        GameObject BridgeR = GameObject.Find("Bridges");
 
-        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null || LightR == null || SpringR == null || SpeedblockR== null)
+        if(GroundR == null || Start == null || End == null || OscR == null || CPR == null || DP == null || HarmOscR == null || LightR == null || SpringR == null || SpeedblockR== null || BridgeR == null)
         {
             Debug.LogError("No essestial objects. Check for ground, start, or end");
             return;
@@ -192,6 +214,7 @@ public class SceneToJson : MonoBehaviour
         CreateLights(LightR.transform);
         CreateSprings(SpringR.transform);
         CreateSpeedblocks(SpeedblockR.transform);
+        CreatBridges (BridgeR.transform);
 
         Debug.Log("Loaded!");
         string json = JsonUtility.ToJson(level);
@@ -442,6 +465,34 @@ public class SceneToJson : MonoBehaviour
 
     }
 
+    void CreatBridges(Transform root)
+    {
+        foreach (Bridge child in root.GetComponentsInChildren<Bridge>())
+        {
+            BridgeInfo bridge = new BridgeInfo(GetMeshName(child.gameObject),
+                child.transform.localScale,
+                child.transform.rotation,
+                child.transform.position, child.tag, child.GetComponent<Collider>().GetType().ToString(), new Vector3(0, 0, 0), 0);
+            if (child.GetComponent<Collider>().GetType() == typeof(BoxCollider))
+            {
+                bridge.volumeType = "box";
+                bridge.colliderExtents = Vector3.Scale(child.transform.localScale, child.GetComponent<BoxCollider>().size);
+                bridge.colliderRadius = 0;
+                // Debug.Log("box");
+
+            }
+            else if (child.GetComponent<Collider>().GetType() == typeof(SphereCollider))
+            {
+                bridge.volumeType = "sphere";
+                bridge.colliderRadius = child.transform.localScale.x * child.GetComponent<SphereCollider>().radius;
+                bridge.colliderExtents = new Vector3(0, 0, 0);
+                // Debug.Log("circle");
+            }
+
+            Debug.Log("Bridge Added");
+            level.bridgeList.Add(bridge);
+        }
+    }
 
     string GetMeshName(GameObject obj)
     {
