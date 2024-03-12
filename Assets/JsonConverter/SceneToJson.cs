@@ -435,7 +435,6 @@ public class SceneToJson : MonoBehaviour
                 speedblock.colliderExtents = new Vector3(0, 0, 0);
                 // Debug.Log("circle");
             }
-            level.primitiveGameObject.Add(speedblock);
 
             Debug.Log("Speedblock Added");
             level.speedBlockList.Add(speedblock);
